@@ -62,7 +62,8 @@
 	function procreation()
 	{
 		nbr++;
-		document.body.innerHTML+="<div id='"+nbr+"' style='top: "+Math.round(Math.random() * window.innerHeight)+"; left: "+Math.round(Math.random() * window.innerWidth)+";'></div>";
+		sex_orientation = (Math.round(Math.random() * 1))?"Male":"Female";
+		document.body.innerHTML+="<div sex='"+sex_orientation+"' id='"+nbr+"' style='background-color: "+((sex_orientation == "Male")?"black":"blue")+"; top: "+Math.round(Math.random() * window.innerHeight)+"; left: "+Math.round(Math.random() * window.innerWidth)+";'></div>";
 	}
 
 	function leave(id)
@@ -76,19 +77,22 @@
 				continue;
 			if (elemnt.offsetLeft >= elemnt_tmp.offsetLeft && elemnt.offsetLeft <= (elemnt_tmp.offsetLeft+elemnt_tmp.offsetWidth) && elemnt.offsetTop >= (elemnt_tmp.offsetTop+elemnt_tmp.offsetHeight))
 			{
-				procreation();
-				sex = 1;
+				if ((elemnt.getAttribute("sex") == "Male" && elemnt_tmp.getAttribute("sex") == "Female") || (elemnt.getAttribute("sex") == "Female" && elemnt_tmp.getAttribute("sex") == "Male"))
+				{
+					procreation();
+					sex = 1;
+				}
 			}
 		}
 		if (sex == 0)
 			moving(elemnt, Math.round(Math.random() * 50));
 		else
-			moving(elemnt, Math.round(Math.random() * 100));
+			moving(elemnt, Math.round(Math.random() * 200));
 	}
 
 	function die(id)
 	{
-		last_dead = id;
+		last_dead = id+1;
 		document.getElementById(id).remove();
 	}
 
@@ -97,18 +101,17 @@
 		age = 100;
 		for (z = last_dead; z <= nbr; z++)
 		{
-			if (!z)
-				continue;
-			if (nbr-age >= z)
+			if (z > age)
 				die(z);
-			leave(z);
+			else
+				leave(z);
 		}
 	}
 
 	function start()
 	{
-		for (b = 0; b < 5; b++){procreation();}
-		setInterval("life()", 50);
+		for (b = 0; b < 10; b++){ procreation(); }
+		setInterval("life()", 500);
 	}
 </script>
 <style>
