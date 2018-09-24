@@ -3,10 +3,10 @@
 <script>
 	nbr = -1;
 	last_dead = 0;
+
 	function choose_direction(elemnt, unity)
 	{
-			direction = Math.round(Math.random() * 8);
-			switch (direction)
+			switch (Math.round(Math.random() * 8))
 			{
 				case 0:
 					elemnt.style.top=elemnt.offsetTounity;
@@ -50,12 +50,19 @@
 	{
 			y_before = elemnt.offsetTop;
 			x_before = elemnt.offsetLeft;
-			choose_direction(elemnt, unity);
-			if ((elemnt.offsetTop > window.innerHeight || elemnt.offsetLeft > window.innerWidth || elemnt.offsetTop < 0 || elemnt.offsetLeft < 0))
+			while (true)
 			{
-					elemnt.style.top=y_before;
-					elemnt.style.left=x_before;
-				moving(elemnt);
+					choose_direction(elemnt, unity);
+				if (elemnt.offsetTop > window.innerHeight ||
+						elemnt.offsetLeft > window.innerWidth ||
+						elemnt.offsetTop < 0 ||
+						elemnt.offsetLeft < 0)
+				{
+						elemnt.style.top=y_before;
+						elemnt.style.left=x_before;
+				}
+				else
+					break;
 			}
 	}
 
@@ -63,7 +70,8 @@
 	{
 		nbr++;
 		sex_orientation = (Math.round(Math.random() * 1))?"Male":"Female";
-		document.body.innerHTML+="<div sex='"+sex_orientation+"' id='"+nbr+"' style='background-color: "+((sex_orientation == "Male")?"black":"blue")+"; top: "+Math.round(Math.random() * window.innerHeight)+"; left: "+Math.round(Math.random() * window.innerWidth)+";'></div>";
+		document.body.innerHTML+="<div class='cell' sex='"+sex_orientation+"' id='"+nbr+"' style='background-color: "+((sex_orientation == "Male")?"black":"blue")+"; top: "+Math.round(Math.random() * window.innerHeight)+"; left: "+Math.round(Math.random() * window.innerWidth)+";'></div>";
+		refresh_data();
 	}
 
 	function leave(id)
@@ -75,7 +83,7 @@
 			elemnt_tmp = document.getElementById(a);
 			if (!elemnt_tmp || elemnt_tmp == elemnt)
 				continue;
-			if (elemnt.offsetLeft >= elemnt_tmp.offsetLeft && elemnt.offsetLeft <= (elemnt_tmp.offsetLeft+elemnt_tmp.offsetWidth) && elemnt.offsetTop >= (elemnt_tmp.offsetTop+elemnt_tmp.offsetHeight))
+			if (elemnt.offsetLeft >= elemnt_tmp.offsetLeft && elemnt.offsetLeft <= (elemnt_tmp.offsetLeft+elemnt_tmp.offsetWidth) && elemnt.offsetTop <= (elemnt_tmp.offsetTop+elemnt_tmp.offsetHeight) && elemnt.offsetTop >= elemnt_tmp.offsetTop)
 			{
 				if ((elemnt.getAttribute("sex") == "Male" && elemnt_tmp.getAttribute("sex") == "Female") || (elemnt.getAttribute("sex") == "Female" && elemnt_tmp.getAttribute("sex") == "Male"))
 				{
@@ -90,34 +98,55 @@
 			moving(elemnt, Math.round(Math.random() * 200));
 	}
 
-	function die(id)
+	function refresh_data()
 	{
-		last_dead = id+1;
-		document.getElementById(id).remove();
+		document.getElementById('alive').innerHTML=nbr-last_dead;
+		document.getElementById('dead').innerHTML=last_dead;
+		document.getElementById('dead_percent').style.width=last_dead*100/nbr+"%";
+		document.getElementById('alive_percent').style.width=nbr*100/last_dead+"%";
+	}
+
+	function dead(id)
+	{
+		if (document.getElementById(id))
+		{
+			last_dead = id+1;
+			document.getElementById(id).remove();
+		}
+		refresh_data();
 	}
 
 	function life()
 	{
-		age = 100;
-		for (z = last_dead; z <= nbr; z++)
+		age = 500;
+		for (z = 0; z <= nbr; z++)
 		{
-			if (z > age)
-				die(z);
+			if (z < nbr-age)
+				dead(z);
 			else
 				leave(z);
 		}
 	}
-
+life_inter = 0;
 	function start()
 	{
 		for (b = 0; b < 10; b++){ procreation(); }
-		setInterval("life()", 500);
+		life_inter = setInterval("life()", 1);
 	}
 </script>
 <style>
 	
-	div {
+	div.cell {
 		background-color: blue;
+		border-radius: 25% 25% 25% 25%;
+		width: 10;
+		height: 10;
+		position: absolute;
+		transform: translate(-50%, -50%);
+	}
+
+	div.dead {
+		background-color: rgba(0,0,0,0.1);
 		border-radius: 25% 25% 25% 25%;
 		width: 10;
 		height: 10;
@@ -128,7 +157,15 @@
 </style>
 </head>
 <body onload="start();">
-
+	<div style="position: absolute; width: 100px; top: 0px; left: 0px; background-color: rgba(0,0,0,0.2);">
+		<h3 style="color: yellow; text-shadow: 0px 0px 5px black;">GodPanel</h3>
+		<button onClick="clearInterval(life_inter);">Stop life</button>
+		<button onClick="inter_life = setInterval('life()', 1);">Start life</button>
+		<h4>Alive : <span id="alive"></span></h4>
+		<h4>Dead : <span id="dead"></span></h4>
+		<div style="background-color: black; height: 20px;" id="dead_percent"></div>
+		<div style="background-color: yellow; height: 20px;" id="alive_percent"></div>
+	</div>
 
 </body>
 </html>
